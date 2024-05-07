@@ -20,3 +20,12 @@ The NYC Complaints and Events Analytics project is designed to build a robust da
 
 ## Cloud Architecture - Conceptual Model
 ![Alt text](documentations/Conceptual_Model.jpeg)
+
+## Data Warehouse Star Schema Design
+
+Below is the star schema design for our Data Warehouse, which supports the analytics for the NYC Complaints and Events Dashboard. This schema includes dimensions for Location, Crime Type, Victim, Suspect, and several other key elements necessary for comprehensive analysis.
+
+![Data Warehouse Star Schema](documentations/DWH_Star_Schema.png)
+
+This schema is optimized for querying large datasets to enable quick insights into crime patterns and correlations with event data in New York City.
+
