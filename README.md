@@ -16,31 +16,7 @@ The NYC Complaints and Events Analytics project is designed to build a robust da
 * Venkata Sai Surya Athuluru - Data Acquisition: Source 2, Cloud Integration, Unit Testing and UAT
 
 ## Project Timeline
+![Alt text](documentations/Project_Timeline.png)
 
-### Requirement Phase (2 Weeks)
-* Requirement Gathering
-* Data Acquisition
-* Data Understanding
-* Hardware/Software Finalization
-
-### Design Phase (2 Weeks)
-* Overall Architecture Design
-* Data Preparation
-* Data Warehouse Architecture Design
-
-### Development Phase (3 Weeks)
-* Development: Data Acquisition Scripts
-* Development: ETL
-* Development: Data Warehouse
-* Development: Reports and Dashboards
-
-### Testing Phase (2 Weeks)
-* Unit Testing of each developed component
-* Integration Testing
-
-### Production Deployment (2 Weeks)
-* Deploy all components on the cloud
-* User Acceptance Testing (UAT)
-
-## Conceptual Model
-![Alt text](documentations/Conceptual Model.jpeg)
+## Cloud Architecture - Conceptual Model
+![Alt text](documentations/Conceptual_Model.jpeg)
