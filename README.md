@@ -43,4 +43,4 @@ The NYC Complaints and Events Analytics project is designed to build a robust da
 * User Acceptance Testing (UAT)
 
 ## Conceptual Model
-![Alt text](documentations/Pre_Conceptual_Model.jpg)
+![Alt text](documentations/Conceptual Model.jpeg)
