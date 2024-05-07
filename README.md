@@ -29,3 +29,19 @@ Below is the star schema design for our Data Warehouse, which supports the analy
 
 This schema is optimized for querying large datasets to enable quick insights into crime patterns and correlations with event data in New York City.
 
+## NYC Events Crime Analytics Dashboard Overview
+
+This interactive dashboard visualizes comprehensive analytics derived from New York City's crime and events data. It offers insights into crime patterns, event participation, and geographical crime distributions across NYC's boroughs.
+
+### Features Highlighted in the Dashboard:
+- **Total Number of Complaints**: Quick metrics on the volume of complaints registered.
+- **Complaint Distribution by Borough**: Pie chart visualization showing the proportion of complaints from each borough.
+- **Top 10 Postcodes by Complaints**: Bar chart highlighting areas with the highest number of complaints.
+- **Complaint Trends Over Time**: Line graph displaying trends in complaint volumes over time.
+- **Complaints by Offense Type**: Breakdown of complaints categorized by types of offenses.
+- **Geographical Crime Map**: A detailed map view showing crime distribution by longitude and latitude.
+
+![NYC Events Crime Analytics Dashboard](documentations/NYC_Events_Crime_Analytics_Dashboard.png)
+
+This dashboard provides actionable insights that can help in strategic planning and operational adjustments for city safety and event management.
+
