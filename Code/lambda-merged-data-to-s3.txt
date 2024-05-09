@@ -1,1 +1,177 @@
+import json
+import boto3
+import pandas as pd
+import io
+import numpy as np
+import warnings
+warnings.filterwarnings("ignore")
 
+def extract_date_part(date_str):
+    if isinstance(date_str, str):
+        return date_str.split('T')[0]
+    else:
+        return np.nan
+
+def convert_dates_to_yyyy_mm_dd(df, date_columns):
+    for col in date_columns:
+        df[col] = df[col].apply(extract_date_part)
+        # Convert the result to datetime with format parameter
+        df[col] = pd.to_datetime(df[col], format='%Y-%m-%d',errors='coerce')
+        
+def replace_spaces(df):
+    """
+    Replace spaces in column names with underscores.
+
+    Parameters:
+        df (DataFrame): Input DataFrame
+
+    Returns:
+        DataFrame: DataFrame with column names replaced
+    """
+    return df.rename(columns=lambda x: x.replace(' ', '_'))
+    
+
+
+def convert_date_format(date_str):
+    """
+    Convert date string from various formats to 'yyyy-mm-dd' format.
+    
+    Parameters:
+        date_str (str): Date string
+        
+    Returns:
+        str: Date string in 'yyyy-mm-dd' format, or 1900-01-01 if the input is invalid
+    """
+    try:
+        # Try parsing the date string with various formats
+        date_obj = pd.to_datetime(date_str, errors='coerce')
+        # Convert datetime object to string in 'yyyy-mm-dd' format
+        return date_obj.strftime('%Y-%m-%d')
+        # This won't be executed due to the return statement
+    except ValueError:
+
+        # If unable to convert, return 1900-01-01 or any other placeholder value
+        return '1900-01-01'
+
+
+
+s3_client = boto3.client('s3')
+
+def lambda_handler(event, context):
+    
+# File 1
+    # NYC Complaint Data
+    bucket_name = 'raw-data-bucket-aka'
+    file_name = 'nyc_complaints.csv'
+    
+    s3_response = s3_client.get_object(Bucket=bucket_name, Key=file_name)
+    print("s3_response:", s3_response)
+
+    file_data = s3_response["Body"].read().decode('utf-8')
+
+    # Load CSV data into a pandas DataFrame
+    csv_data = io.StringIO(file_data)
+    df = pd.read_csv(csv_data)
+    
+    cols=['cmplnt_fr_dt','cmplnt_to_dt','rpt_dt']
+    convert_dates_to_yyyy_mm_dd(df,cols)
+    
+    df['latitude'] = df['latitude'].astype(float)
+    df['longitude'] = df['longitude'].astype(float)
+    
+    df = df.drop(columns=['addr_pct_cd','hadevelopt','housing_psa','x_coord_cd','y_coord_cd','lat_lon','station_name','transit_district'])
+    
+    df = df.rename(columns={'latitude': 'latitudeC', 'longitude': 'longitudeC'})
+    
+    # merged_df = merged_df.drop(columns=['Census_Tract_(2020)', 'Neighborhood_Tabulation_Area_(NTA)_(2020)','lat_lon'])
+    
+    # merged_df = merged_df.replace('(null)', None)
+    
+
+# File 2    
+    
+    # Pincode data
+    file_name_pincode = 'zipcodeexact.csv'
+    
+    s3_response_pincode = s3_client.get_object(Bucket=bucket_name, Key=file_name_pincode)
+    print("s3_response:", s3_response_pincode)
+    
+    file_data_pincode = s3_response_pincode["Body"].read().decode('utf-8')
+    
+    # Load CSV data into a pandas DataFrame
+    csv_data_pincode = io.StringIO(file_data_pincode)
+    df_pincode = pd.read_csv(csv_data_pincode)
+    
+    df_pincode['latitude'] = df_pincode['latitude'].astype(float)
+    df_pincode['longitude'] = df_pincode['longitude'].astype(float)
+    
+
+    
+    
+# File 3      
+    # Event data
+    file_name_event = 'nyc_events.csv'
+    
+    s3_response_event = s3_client.get_object(Bucket=bucket_name, Key=file_name_event)
+    print("s3_response:", s3_response_event)
+    
+    file_data_event = s3_response_event["Body"].read().decode('utf-8')
+
+    
+    # Load CSV data into a pandas DataFrame
+    csv_data_event = io.StringIO(file_data_event)
+    event_df = pd.read_csv(csv_data_event)
+
+    #event_df=replace_spaces(event_df)
+    event_df = replace_spaces(event_df)
+
+    #event_df['Event_Date'] = event_df['Event_Date'].apply(convert_date_format)
+
+    event_df = event_df.dropna(subset=['Postcode'])
+
+    event_df['Postcode'] = event_df['Postcode'].astype(int)
+    
+    event_df = event_df.drop(columns=['Status','Community_Board','BIN','BBL','Census_Tract_(2020)','Neighborhood_Tabulation_Area_(NTA)_(2020)','Council_District_'])
+
+
+    print(event_df.columns)
+
+    
+    
+    #fixing date
+    #Assuming event_df is your DataFrame containing the events
+    event_df['Event_Date'] = pd.to_datetime(event_df['Event_Date'], errors='coerce', infer_datetime_format=True)
+    #event_df['Event_Date'] = pd.to_datetime(event_df['Event_Date'], errors='coerce')
+    event_df['Start_Time'] = pd.to_datetime(event_df['Start_Time'], format='%I:%M %p').dt.strftime('%H:%M')
+    event_df['End_Time'] = pd.to_datetime(event_df['End_Time'], format='%I:%M %p').dt.strftime('%H:%M')
+    print("Event_Date", event_df['Event_Date'].head())
+
+    
+# Merging of Files    
+    merged_nyc_pincode = df.merge(df_pincode, left_on=['latitudeC', 'longitudeC'], right_on=['latitude', 'longitude'], how='inner')
+    merged_nyc_pincode = merged_nyc_pincode.dropna()
+    merged_nyc_pincode = merged_nyc_pincode.drop_duplicates()
+    merged_nyc_pincode['Zip_Code'] = merged_nyc_pincode['Zip_Code'].astype(int)
+    print("Merged Date", merged_nyc_pincode['cmplnt_fr_dt'].head())
+
+
+
+# Final Merging
+
+    final_df = merged_nyc_pincode.merge(event_df, left_on=['cmplnt_fr_dt','Zip_Code'], right_on=['Event_Date','Postcode'], how='inner')
+    final_df = final_df.replace('(null)', None)
+    final_df = final_df.drop(columns=['latitude','longitude','boro_nm'])
+
+    print("going to csvcsv_buffer") 
+    print('Shape:',final_df.shape)
+    csv_final_df = final_df.to_csv(index=False)
+
+    #Get the filename (optional)
+    filename_final_df = "final_df.csv" 
+
+  
+  
+    # Upload the CSV string to the S3 bucket
+    s3_client.put_object(Body=csv_final_df, Bucket='merged-data-bucket-aka', Key=filename_final_df)
+
+    print(f"Final_df CSV file uploaded to merged-data-bucket-aka!")

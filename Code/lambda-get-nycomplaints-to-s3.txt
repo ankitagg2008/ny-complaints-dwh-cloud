@@ -1,0 +1,35 @@
+import requests
+import boto3
+import pandas as pd
+import io
+
+client_s3 = boto3.client('s3')
+
+def lambda_handler(event, context):
+  # API URL with the modified query
+    url = "https://data.cityofnewyork.us/resource/qgea-i56i.json?$where=cmplnt_fr_dt between '2016-01-05T00:00:00.000' and '2022-12-31T23:59:59.999'&$limit=100000"
+    print("step 1 complete")
+# Send a GET request to the API
+    response = requests.get(url)
+
+# Check if the request was successful (status code 200)
+    if response.status_code == 200:
+    # Convert JSON response to DataFrame
+        data = response.json()
+        df = pd.DataFrame(data)
+        print("Data loaded successfully!")
+    else:
+        print("Failed to fetch data from the API.")
+        
+    print("going to csvcsv_buffer")    
+    csv_buffer = df.to_csv(index=False)
+
+# Get the filename (optional)
+    filename = "nyc_complaints.csv"  
+
+# Upload the CSV string to the S3 bucket
+    client_s3.put_object(Body=csv_buffer, Bucket='raw-data-bucket-aka', Key=filename)
+
+    print(f"CSV file uploaded to raw-data-bucket-aka!")
+    
+    
