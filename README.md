@@ -11,7 +11,7 @@ The NYC Complaints and Events Analytics project is designed to build a robust da
 ## Team Members Roles and Responsibilities
 
 * Ankit Kumar Aggarwal - Overall Project Management, Cloud Architecture Design, ETL, Data Warehouse Design, Monitoring Dashboard Design, Quality Assurance.
-* Aravind Raju - Data Acquisition: Source 1, Data Warehouse Development, Unit Testing and UAT
+* Aravind  Raju - Data Acquisition: Source 1, Data Warehouse Development, Unit Testing and UAT
 * Sameer Beloshe - Overall ETL Development, Reports & Dashboard Development, Unit Testing and UAT
 * Venkata Sai Surya Athuluru - Data Acquisition: Source 2, Cloud Integration, Unit Testing and UAT
 
